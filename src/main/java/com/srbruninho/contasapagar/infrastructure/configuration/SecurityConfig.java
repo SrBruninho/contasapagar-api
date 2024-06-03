@@ -30,6 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/contasapagar/**").permitAll()
                         .anyRequest().authenticated()
                 )
+                .formLogin(formLogin -> formLogin.defaultSuccessUrl("/api/contas"))
                 .httpBasic(withDefaults());
         return http.build();
     }

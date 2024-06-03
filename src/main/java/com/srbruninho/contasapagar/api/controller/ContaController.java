@@ -6,6 +6,11 @@ import com.srbruninho.contasapagar.domain.model.Conta;
 import com.srbruninho.contasapagar.domain.services.ContaService;
 import com.srbruninho.contasapagar.domain.repositories.projection.TotalValuePaidPerPeriodProjection;
 import com.srbruninho.contasapagar.infrastructure.exception.BusinessErrorResponse;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -20,15 +25,18 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/contas")
+@OpenAPIDefinition(info = @Info(title = "Contas a pagar API", version = "v1"))
+@Tag(name = "Conta Controller", description = "Endpoints para gerenciamento de contas")
 public class ContaController {
 
     @Autowired
     private ContaService contaService;
 
+    @Operation(summary = "Criar uma nova conta")
     @PostMapping("/create-account")
     public ResponseEntity<Object> createAccount(@Valid @RequestBody Conta conta) {
         try {
-            if (conta == null)//validação incorreta
+            if (conta == null)
                 return ResponseEntity.badRequest().body("The account cannot be null");
 
             Conta newAccount = contaService.save(conta);
@@ -40,8 +48,9 @@ public class ContaController {
         }
     }
 
+    @Operation(summary = "Atualizar uma conta existente")
     @PutMapping("/update-account/{id}")
-    public ResponseEntity<Object> updateAccount(@Valid @PathVariable Long id, @RequestBody Conta conta) {
+    public ResponseEntity<Object> updateAccount( @Parameter(description = "ID da conta a ser atualizada", example = "1")@Valid @PathVariable Long id, @RequestBody Conta conta) {
         try {
             if (conta == null)
                 return ResponseEntity.badRequest().body("The account cannot be null!");
@@ -62,8 +71,9 @@ public class ContaController {
         }
     }
 
+    @Operation(summary = "Atualizar situação de pagamento de uma conta")
     @PutMapping("/update-situacao/{id}")
-    public ResponseEntity<Object> updateSituacao(@Valid @PathVariable Long id, @RequestBody boolean isPaid) {
+    public ResponseEntity<Object> updateSituacao(@Parameter(description = "ID da conta a ter a situação de pagamento atualizada", example = "1") @Valid @PathVariable Long id, @RequestBody boolean isPaid) {
         try {
 
             if (id == null)
@@ -83,6 +93,7 @@ public class ContaController {
         }
     }
 
+    @Operation(summary = "Obter todas as contas paginadas")
     @GetMapping
     public ResponseEntity<Page<ContaDTO>> getAll(@RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "10") int size) {
@@ -92,13 +103,13 @@ public class ContaController {
 
         return ResponseEntity.ok(contaDTOPage);
     }
-
+    @Operation(summary = "Filtrar contas pendentes por data de vencimento e descrição")
     @GetMapping("/filter/due-date/description/unpaid")
-    public ResponseEntity<Page<ContaDTO>> getPendingBills(@RequestParam(defaultValue = "0") int page,
-                                              @RequestParam(defaultValue = "10") int size,
-                                                       @RequestParam LocalDate startDate,
-                                                       @RequestParam LocalDate endDate,
-                                                       @RequestParam String description) {
+    public ResponseEntity<Page<ContaDTO>> getPendingBills(@Parameter(description = "Número da página (começa em 0)", example = "0") @RequestParam(defaultValue = "0") int page,
+                                                          @Parameter(description = "Tamanho da página", example = "10") @RequestParam(defaultValue = "10") int size,
+                                                          @Parameter(description = "Data de início do filtro", example = "2024-06-01") @RequestParam LocalDate startDate,
+                                                          @Parameter(description = "Data de término do filtro", example = "2024-06-30") @RequestParam LocalDate endDate,
+                                                          @Parameter(description = "Descrição da conta") @RequestParam String description) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("dataVencimento").descending());
         Page<Conta> contas = contaService.getAccountsbyDateAndDescription(startDate, endDate, description, pageable);
         Page<ContaDTO> contaDTOPage = contas.map(ContaConverter::toDTO);
@@ -106,20 +117,21 @@ public class ContaController {
         return ResponseEntity.ok(contaDTOPage);
     }
 
+    @Operation(summary = "Obter valor total pago por período")
     @GetMapping("/filter/total-value/period/paid")
-    public ResponseEntity<Page<TotalValuePaidPerPeriodProjection>> getTotalValuePerPeriod(@RequestParam(defaultValue = "0") int page,
-                                                                                          @RequestParam(defaultValue = "10") int size,
-                                                                                          @RequestParam LocalDate startDate,
-                                                                                          @RequestParam LocalDate endDate) {
+    public ResponseEntity<Page<TotalValuePaidPerPeriodProjection>> getTotalValuePerPeriod(@Parameter(description = "Número da página (começa em 0)", example = "0") @RequestParam(defaultValue = "0") int page,
+                                                                                          @Parameter(description = "Tamanho da página", example = "10") @RequestParam(defaultValue = "10") int size,
+                                                                                          @Parameter(description = "Data de início do período", example = "2024-01-01") @RequestParam LocalDate startDate,
+                                                                                          @Parameter(description = "Data de término do período", example = "2024-06-30") @RequestParam LocalDate endDate) {
         Pageable pageable = PageRequest.of(page, size);
         Page<TotalValuePaidPerPeriodProjection> periodos = contaService.getTotalValuePaidPerPeriod(startDate, endDate, pageable);
         return ResponseEntity.ok(periodos);
     }
 
 
-
+    @Operation(summary = "Obter uma conta pelo ID - paginada")
     @GetMapping("/{id}")
-    public ResponseEntity<Object> getById(@PathVariable Long id) {
+    public ResponseEntity<Object> getById(@Parameter(description = "ID da conta a ser recuperada", example = "1")@PathVariable Long id) {
         try {
             if (id == null)
                 return ResponseEntity.badRequest().body("An Id must be informed!");
@@ -138,16 +150,18 @@ public class ContaController {
         }
     }
 
+    @Operation(summary = "Excluir uma conta pelo ID")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Object> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Object> deleteById(@Parameter(description = "ID da conta a ser deletada", example = "1")@PathVariable Long id) {
         if (id == null)
             return ResponseEntity.badRequest().body("An Id must be informed!");
         contaService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Importar contas a pagar a partir de um arquivo CSV")
     @PostMapping("/import-csv")
-    public ResponseEntity<Object> importFromCsv(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Object> importFromCsv(@Parameter(description = "Arquivo CSV contendo contas a pagar", required = true)@RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("File is empty");
         }
