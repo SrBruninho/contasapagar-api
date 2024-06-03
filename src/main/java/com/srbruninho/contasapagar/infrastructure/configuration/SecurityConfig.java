@@ -27,7 +27,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authz) -> authz
-                        .requestMatchers("/api/**").permitAll()
+                        .requestMatchers("/contasapagar/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults());
