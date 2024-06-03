@@ -1,9 +1,11 @@
-package com.srbruninho.contasapagar.infraestructure.controller;
+package com.srbruninho.contasapagar.api.controller;
 
+import com.srbruninho.contasapagar.api.converter.ContaConverter;
+import com.srbruninho.contasapagar.api.dto.ContaDTO;
 import com.srbruninho.contasapagar.domain.model.Conta;
 import com.srbruninho.contasapagar.domain.services.ContaService;
-import com.srbruninho.contasapagar.infraestructure.projection.PeriodProjection;
-import com.srbruninho.contasapagar.infraestructure.exception.BusinessErrorResponse;
+import com.srbruninho.contasapagar.domain.repositories.projection.TotalValuePaidPerPeriodProjection;
+import com.srbruninho.contasapagar.infrastructure.exception.BusinessErrorResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -53,7 +55,7 @@ public class ContaController {
             conta.setId(id);
             Conta updatedAccount = contaService.save(conta);
 
-            return new ResponseEntity<>(updatedAccount, HttpStatus.OK);
+            return new ResponseEntity<>(ContaConverter.toDTO(updatedAccount), HttpStatus.OK);
         } catch (Exception e) {
             BusinessErrorResponse businessErrorResponse = new BusinessErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
             return new ResponseEntity<>(businessErrorResponse, HttpStatus.BAD_REQUEST);
@@ -74,7 +76,7 @@ public class ContaController {
 
             Conta updatedAccount = contaService.updateSituacao(existingAccount.get(), isPaid);
 
-            return new ResponseEntity<>(updatedAccount, HttpStatus.OK);
+            return new ResponseEntity<>(ContaConverter.toDTO(updatedAccount), HttpStatus.OK);
         } catch (Exception e) {
             BusinessErrorResponse businessErrorResponse = new BusinessErrorResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
             return new ResponseEntity<>(businessErrorResponse, HttpStatus.BAD_REQUEST);
@@ -82,31 +84,35 @@ public class ContaController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<Conta>> getAll(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<Page<ContaDTO>> getAll(@RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("dataVencimento").descending());
         Page<Conta> contas = contaService.findAll(pageable);
-        return ResponseEntity.ok(contas);
+        Page<ContaDTO> contaDTOPage = contas.map(ContaConverter::toDTO);
+
+        return ResponseEntity.ok(contaDTOPage);
     }
 
     @GetMapping("/filter/due-date/description/unpaid")
-    public ResponseEntity<Page<Conta>> getPendingBills(@RequestParam(defaultValue = "0") int page,
+    public ResponseEntity<Page<ContaDTO>> getPendingBills(@RequestParam(defaultValue = "0") int page,
                                               @RequestParam(defaultValue = "10") int size,
                                                        @RequestParam LocalDate startDate,
                                                        @RequestParam LocalDate endDate,
                                                        @RequestParam String description) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("dataVencimento").descending());
         Page<Conta> contas = contaService.getAccountsbyDateAndDescription(startDate, endDate, description, pageable);
-        return ResponseEntity.ok(contas);
+        Page<ContaDTO> contaDTOPage = contas.map(ContaConverter::toDTO);
+
+        return ResponseEntity.ok(contaDTOPage);
     }
 
     @GetMapping("/filter/total-value/period/paid")
-    public ResponseEntity<Page<PeriodProjection>> getTotalValuePerPeriod(@RequestParam(defaultValue = "0") int page,
-                                                                         @RequestParam(defaultValue = "10") int size,
-                                                                         @RequestParam LocalDate startDate,
-                                                                         @RequestParam LocalDate endDate) {
+    public ResponseEntity<Page<TotalValuePaidPerPeriodProjection>> getTotalValuePerPeriod(@RequestParam(defaultValue = "0") int page,
+                                                                                          @RequestParam(defaultValue = "10") int size,
+                                                                                          @RequestParam LocalDate startDate,
+                                                                                          @RequestParam LocalDate endDate) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<PeriodProjection> periodos = contaService.getTotalValuePaidPerPeriod(startDate, endDate, pageable);
+        Page<TotalValuePaidPerPeriodProjection> periodos = contaService.getTotalValuePaidPerPeriod(startDate, endDate, pageable);
         return ResponseEntity.ok(periodos);
     }
 
@@ -124,8 +130,9 @@ public class ContaController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Id not found!");
 
             Page<Conta> contaPage = new PageImpl<>(List.of(existingAccount.get()));
+            Page<ContaDTO> contaDTOPage = contaPage.map(ContaConverter::toDTO);
 
-            return new ResponseEntity<>(contaPage, HttpStatus.OK);
+            return new ResponseEntity<>(contaDTOPage, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(ResponseEntity.noContent(), HttpStatus.BAD_REQUEST);
         }

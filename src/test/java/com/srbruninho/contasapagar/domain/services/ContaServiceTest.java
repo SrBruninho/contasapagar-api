@@ -3,7 +3,7 @@ package com.srbruninho.contasapagar.domain.services;
 import com.srbruninho.contasapagar.domain.model.Conta;
 import com.srbruninho.contasapagar.domain.model.Situacao;
 import com.srbruninho.contasapagar.domain.repositories.ContaRepository;
-import com.srbruninho.contasapagar.infraestructure.projection.PeriodProjection;
+import com.srbruninho.contasapagar.domain.repositories.projection.TotalValuePaidPerPeriodProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.junit.jupiter.api.Test;
@@ -209,12 +209,12 @@ class ContaServiceTest {
         LocalDate startDate = LocalDate.of(2023, 1, 1);
         LocalDate endDate = LocalDate.of(2023, 12, 31);
         Pageable pageable = PageRequest.of(0, 10);
-        PeriodProjection projection = mock(PeriodProjection.class);
-        Page<PeriodProjection> page = new PageImpl<>(Collections.singletonList(projection));
+        TotalValuePaidPerPeriodProjection projection = mock(TotalValuePaidPerPeriodProjection.class);
+        Page<TotalValuePaidPerPeriodProjection> page = new PageImpl<>(Collections.singletonList(projection));
         when(contaRepository.getTotalValuePaidPerPeriod(startDate, endDate, pageable)).thenReturn(page);
 
         // Act
-        Page<PeriodProjection> result = contaService.getTotalValuePaidPerPeriod(startDate, endDate, pageable);
+        Page<TotalValuePaidPerPeriodProjection> result = contaService.getTotalValuePaidPerPeriod(startDate, endDate, pageable);
 
         // Assert
         assertEquals(1, result.getTotalElements());

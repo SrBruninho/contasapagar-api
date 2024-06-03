@@ -1,9 +1,9 @@
 package com.srbruninho.contasapagar.web;
 
+import com.srbruninho.contasapagar.api.converter.ContaConverter;
 import com.srbruninho.contasapagar.domain.model.Conta;
-import com.srbruninho.contasapagar.domain.model.Situacao;
 import com.srbruninho.contasapagar.domain.services.ContaService;
-import com.srbruninho.contasapagar.infraestructure.controller.ContaController;
+import com.srbruninho.contasapagar.api.controller.ContaController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -76,7 +76,7 @@ public class ContaControllerTest {
 
         //Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(conta, response.getBody());
+        assertEquals(ContaConverter.toDTO(conta), response.getBody());
 
         verify(contaService, times(1)).findById(id);
         verify(contaService, times(1)).save(any(Conta.class));

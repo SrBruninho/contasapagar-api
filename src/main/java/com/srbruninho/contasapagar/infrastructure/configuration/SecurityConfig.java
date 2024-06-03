@@ -1,4 +1,4 @@
-package com.srbruninho.contasapagar.infraestructure.configuration;
+package com.srbruninho.contasapagar.infrastructure.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

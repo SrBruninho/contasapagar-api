@@ -4,7 +4,7 @@ import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 import com.srbruninho.contasapagar.domain.model.Conta;
 import com.srbruninho.contasapagar.domain.repositories.ContaRepository;
-import com.srbruninho.contasapagar.infraestructure.projection.PeriodProjection;
+import com.srbruninho.contasapagar.domain.repositories.projection.TotalValuePaidPerPeriodProjection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,7 +56,7 @@ public class ContaService {
         contaRepository.deleteById(id);
     }
 
-    public Page<PeriodProjection> getTotalValuePaidPerPeriod(LocalDate startDate, LocalDate endDate, Pageable pageable) {
+    public Page<TotalValuePaidPerPeriodProjection> getTotalValuePaidPerPeriod(LocalDate startDate, LocalDate endDate, Pageable pageable) {
         return contaRepository.getTotalValuePaidPerPeriod(startDate, endDate, pageable);
     }
 

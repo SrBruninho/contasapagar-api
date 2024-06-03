@@ -1,4 +1,4 @@
-package com.srbruninho.contasapagar.infraestructure.exception;
+package com.srbruninho.contasapagar.infrastructure.exception;
 
 import lombok.*;
 
