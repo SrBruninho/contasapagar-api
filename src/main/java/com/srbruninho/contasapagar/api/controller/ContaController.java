@@ -161,7 +161,7 @@ public class ContaController {
 
     @Operation(summary = "Importar contas a pagar a partir de um arquivo CSV")
     @PostMapping("/import-csv")
-    public ResponseEntity<Object> importFromCsv(@Parameter(description = "Arquivo CSV contendo contas a pagar", required = true)@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Object> importFromCsv(@Parameter(description = "Arquivo CSV contendo contas a pagar no formato 'Descrição,Valor,Vencimento,Pagamento' separados por vírgula. Exemplo: \"Conta Gás\",39.99,\"2024-06-22\",\"2024-04-22\"", required = true) @RequestParam("file") MultipartFile file) {
         if (file.isEmpty()) {
             return ResponseEntity.badRequest().body("File is empty");
         }
