@@ -93,7 +93,7 @@ docker-compose up
 
 ## SpringDoc
 
-http://localhost:8080/swagger-ui.html
+http://localhost:8080/contasapagar/swagger-ui/index.html#
 
 ## Notas Adicionais
 ##### Certifique-se de ter o Docker e Docker Compose instalados.
